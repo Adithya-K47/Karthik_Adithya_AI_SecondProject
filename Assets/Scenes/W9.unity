@@ -493,7 +493,7 @@ MonoBehaviour:
     _version: 3.41
     _category: 
     _comments: 
-    _translation: {x: -97, y: -63}
+    _translation: {x: -35, y: 69}
     _zoomFactor: 1
   _firstActivation: 0
   _enableAction: 0
@@ -654,7 +654,7 @@ MonoBehaviour:
     _version: 3.41
     _category: 
     _comments: 
-    _translation: {x: -388, y: 56}
+    _translation: {x: -361, y: 94}
     _zoomFactor: 1
   _firstActivation: 0
   _enableAction: 0
