@@ -1,11 +1,11 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(CharacterController))]
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 6f;
     public float rotationSpeed = 10f;
-    public Transform cameraTransform;
 
     public MeshRenderer playerRenderer;
     public Color normalColor = Color.white;
@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
             HandleMovement();
         }
 
-        if (isInAttachArea && Input.GetKeyDown(KeyCode.Space))
+        if (isInAttachArea && Keyboard.current != null && Keyboard.current.spaceKey.wasPressedThisFrame)
         {
             ToggleAttachment();
         }
@@ -40,25 +40,33 @@ public class PlayerController : MonoBehaviour
 
     private void HandleMovement()
     {
-        float horizontal = Input.GetAxisRaw("Horizontal");
-        float vertical = Input.GetAxisRaw("Vertical");
+        float horizontal = 0f;
+        float vertical = 0f;
+
+        if (Keyboard.current != null)
+        {
+            if (Keyboard.current.wKey.isPressed || Keyboard.current.upArrowKey.isPressed) vertical += 1f;
+            if (Keyboard.current.sKey.isPressed || Keyboard.current.downArrowKey.isPressed) vertical -= 1f;
+            if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed) horizontal += 1f;
+            if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed) horizontal -= 1f;
+        }
 
         Vector3 direction = new Vector3(horizontal, 0f, vertical).normalized;
 
         if (direction.magnitude >= 0.1f)
         {
+            // Find the angle we need to face based purely on the keys pressed (W = Up/North, D = Right/East)
             float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
-            
-            targetAngle += cameraTransform.eulerAngles.y;
 
-            float smoothedAngle = Mathf.LerpAngle(transform.eulerAngles.y, targetAngle, rotationSpeed * Time.deltaTime);
-            transform.rotation = Quaternion.Euler(0f, smoothedAngle, 0f);
+            // Smoothly rotate the character to face the movement direction
+            Quaternion targetRotation = Quaternion.Euler(0f, targetAngle, 0f);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
 
-            Vector3 moveDirection = Quaternion.Euler(0f, targetAngle, 0f) * Vector3.forward;
-            
-            characterController.Move(moveDirection.normalized * moveSpeed * Time.deltaTime);
+            // Move the character in the global direction pressed
+            characterController.Move(direction * moveSpeed * Time.deltaTime);
         }
 
+        // Apply constant simple gravity
         characterController.Move(Vector3.down * 9.81f * Time.deltaTime);
     }
 
